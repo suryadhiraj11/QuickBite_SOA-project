@@ -1,0 +1,5 @@
+package com.quickbite.auth.service;
+
+public class AuthService {
+
+}

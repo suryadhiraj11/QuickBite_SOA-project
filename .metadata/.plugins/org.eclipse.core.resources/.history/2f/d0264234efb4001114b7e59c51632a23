@@ -1,0 +1,44 @@
+spring.application.name=API-GATEWAY
+
+server.port=8080
+
+
+# ===============================
+# EUREKA
+# ===============================
+
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+eureka.instance.prefer-ip-address=true
+
+
+# ===============================
+# GATEWAY DISCOVERY
+# ===============================
+
+spring.cloud.gateway.server.webflux.discovery.locator.enabled=true
+spring.cloud.gateway.server.webflux.discovery.locator.lower-case-service-id=true
+
+
+# ===============================
+# AUTH SERVICE ROUTE
+# ===============================
+
+spring.cloud.gateway.server.webflux.routes[0].id=auth-service
+spring.cloud.gateway.server.webflux.routes[0].uri=lb://AUTH-SERVICE
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/api/auth/**
+
+
+# ===============================
+# ACTUATOR
+# ===============================
+
+management.endpoints.web.exposure.include=health,info,gateway
+
+
+# ===============================
+# JWT
+# ===============================
+
+jwt.secret=QuickBiteSuperSecretKeyForJWTAuthentication2026

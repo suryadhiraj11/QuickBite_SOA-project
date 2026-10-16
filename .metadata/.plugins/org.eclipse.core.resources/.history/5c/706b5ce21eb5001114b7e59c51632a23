@@ -1,0 +1,180 @@
+package com.quickbite.order.controller;
+
+import com.quickbite.order.dto.CreateOrderRequest;
+import com.quickbite.order.dto.UpdateOrderStatusRequest;
+import com.quickbite.order.entity.OrderStatus;
+import jakarta.validation.Valid;
+import com.quickbite.order.entity.Order;
+import com.quickbite.order.service.OrderService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+    
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Order Service is working");
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<Order> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            Authentication authentication) {
+
+        String customerEmail = authentication.getName();
+
+        Order order = orderService.createOrder(
+                request,
+                customerEmail
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(order);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> getOrder(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Order order = orderService.getOrder(id);
+
+        String email = authentication.getName();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isRestaurantOwner = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_RESTAURANT_OWNER"));
+
+        boolean isCustomer = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_CUSTOMER"));
+
+        // Admin can view any order
+        if (isAdmin) {
+            return ResponseEntity.ok(order);
+        }
+
+        // Customer can view only their own order
+        if (isCustomer) {
+
+            if (!order.getCustomerEmail().equals(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return ResponseEntity.ok(order);
+        }
+
+        // Restaurant owner can view only their restaurant's orders
+        if (isRestaurantOwner) {
+
+            RestaurantResponse restaurant =
+                    orderService.getRestaurant(order.getRestaurantId());
+
+            if (restaurant == null ||
+                    !restaurant.getOwnerEmail().equals(email)) {
+
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return ResponseEntity.ok(order);
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @GetMapping("/my-orders")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<List<Order>> getMyOrders(
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                orderService.getCustomerOrders(
+                        authentication.getName()
+                )
+        );
+    }
+
+    @GetMapping("/restaurant/{restaurantId}")
+    @PreAuthorize("hasAnyRole('RESTAURANT_OWNER', 'ADMIN')")
+    public ResponseEntity<List<Order>> getRestaurantOrders(
+            @PathVariable Long restaurantId,
+            Authentication authentication) {
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+
+            var restaurant =
+                    orderService.getRestaurant(
+                            restaurantId
+                    );
+
+            if (!authentication.getName()
+                    .equals(restaurant.getOwnerEmail())) {
+
+                return ResponseEntity.status(403).build();
+            }
+        }
+
+        return ResponseEntity.ok(
+                orderService.getRestaurantOrders(restaurantId)
+        );
+    }
+    
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'RESTAURANT_OWNER', 'ADMIN')")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateOrderStatusRequest request,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isRestaurantOwner = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_RESTAURANT_OWNER"));
+
+        Order updatedOrder = orderService.updateStatus(
+                id,
+                request.getStatus(),
+                email,
+                isAdmin,
+                isRestaurantOwner
+        );
+
+        return ResponseEntity.ok(updatedOrder);
+    }
+    
+}

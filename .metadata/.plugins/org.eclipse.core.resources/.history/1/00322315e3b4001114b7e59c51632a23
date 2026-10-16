@@ -1,0 +1,5 @@
+package com.quickbite.auth.controller;
+
+public class AuthController {
+
+}

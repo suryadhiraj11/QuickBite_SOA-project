@@ -1,0 +1,5 @@
+package com.quickbite.auth.entity;
+
+public class Role {
+
+}

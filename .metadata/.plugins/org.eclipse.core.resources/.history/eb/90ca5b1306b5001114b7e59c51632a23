@@ -1,0 +1,63 @@
+package com.quickbite.restaurant.service;
+
+import com.quickbite.restaurant.dto.RestaurantRequest;
+import com.quickbite.restaurant.entity.Restaurant;
+import com.quickbite.restaurant.repository.RestaurantRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class RestaurantService {
+
+    private final RestaurantRepository repository;
+
+    public RestaurantService(RestaurantRepository repository) {
+        this.repository = repository;
+    }
+
+    public Restaurant createRestaurant(
+            RestaurantRequest request,
+            String ownerEmail) {
+
+        Restaurant restaurant = new Restaurant();
+
+        restaurant.setName(request.getName());
+        restaurant.setDescription(request.getDescription());
+        restaurant.setLocation(request.getLocation());
+        restaurant.setAddress(request.getAddress());
+        restaurant.setPhone(request.getPhone());
+
+        restaurant.setOwnerEmail(ownerEmail);
+
+        return repository.save(restaurant);
+    }
+
+    public List<Restaurant> getAllRestaurants() {
+        return repository.findAll();
+    }
+
+    public List<Restaurant> getOpenRestaurants() {
+        return repository.findByOpenTrue();
+    }
+
+    public List<Restaurant> getByLocation(String location) {
+        return repository.findByLocationIgnoreCase(location);
+    }
+
+    public List<Restaurant> getByOwner(String ownerEmail) {
+        return repository.findByOwnerEmail(ownerEmail);
+    }
+    
+    public List<Restaurant> getMyRestaurants(String ownerEmail) {
+
+        return repository.findByOwnerEmail(ownerEmail);
+
+    }
+
+    public Restaurant getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Restaurant not found"));
+    }
+}

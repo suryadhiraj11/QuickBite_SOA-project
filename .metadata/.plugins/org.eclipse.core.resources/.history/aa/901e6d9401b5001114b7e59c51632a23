@@ -1,0 +1,16 @@
+package com.quickbite.restaurant.repository;
+
+import com.quickbite.restaurant.entity.Restaurant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface RestaurantRepository
+        extends JpaRepository<Restaurant, Long> {
+
+    List<Restaurant> findByLocationIgnoreCase(String location);
+
+    List<Restaurant> findByOpenTrue();
+
+    List<Restaurant> findByOwnerId(Long ownerId);
+}

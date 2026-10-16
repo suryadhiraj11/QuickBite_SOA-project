@@ -1,0 +1,5 @@
+package com.quickbite.restaurant.dto;
+
+public class MenuCategoryRequest {
+
+}

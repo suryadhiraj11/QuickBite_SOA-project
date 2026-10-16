@@ -1,0 +1,63 @@
+package com.quickbite.restaurant.service;
+
+import com.quickbite.restaurant.dto.MenuCategoryRequest;
+import com.quickbite.restaurant.dto.MenuItemRequest;
+import com.quickbite.restaurant.entity.MenuCategory;
+import com.quickbite.restaurant.entity.MenuItem;
+import com.quickbite.restaurant.repository.MenuCategoryRepository;
+import com.quickbite.restaurant.repository.MenuItemRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class MenuService {
+
+    private final MenuCategoryRepository categoryRepository;
+    private final MenuItemRepository itemRepository;
+
+    public MenuService(
+            MenuCategoryRepository categoryRepository,
+            MenuItemRepository itemRepository) {
+
+        this.categoryRepository = categoryRepository;
+        this.itemRepository = itemRepository;
+    }
+
+    public MenuCategory createCategory(MenuCategoryRequest request) {
+
+        MenuCategory category = new MenuCategory();
+
+        category.setRestaurantId(request.getRestaurantId());
+        category.setName(request.getName());
+
+        return categoryRepository.save(category);
+    }
+
+    public List<MenuCategory> getCategories(Long restaurantId) {
+        return categoryRepository.findByRestaurantId(restaurantId);
+    }
+
+    public MenuItem createItem(MenuItemRequest request) {
+
+        MenuItem item = new MenuItem();
+
+        item.setRestaurantId(request.getRestaurantId());
+        item.setCategoryId(request.getCategoryId());
+        item.setName(request.getName());
+        item.setDescription(request.getDescription());
+        item.setPrice(request.getPrice());
+        item.setImageUrl(request.getImageUrl());
+
+        return itemRepository.save(item);
+    }
+
+    public List<MenuItem> getMenu(Long restaurantId) {
+        return itemRepository.findByRestaurantId(restaurantId);
+    }
+
+    public List<MenuItem> getAvailableMenu(Long restaurantId) {
+        return itemRepository
+                .findByRestaurantIdAndAvailableTrue(restaurantId);
+    }
+}

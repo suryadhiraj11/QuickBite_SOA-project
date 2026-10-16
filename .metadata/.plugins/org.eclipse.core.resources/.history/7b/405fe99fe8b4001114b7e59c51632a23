@@ -1,0 +1,5 @@
+package com.quickbite.gateway.config;
+
+public class SecurityConfig {
+
+}

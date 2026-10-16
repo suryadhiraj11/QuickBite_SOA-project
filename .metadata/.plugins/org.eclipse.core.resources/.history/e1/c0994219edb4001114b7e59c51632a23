@@ -1,0 +1,5 @@
+package com.quickbite.restaurant.service;
+
+public class MenuService {
+
+}

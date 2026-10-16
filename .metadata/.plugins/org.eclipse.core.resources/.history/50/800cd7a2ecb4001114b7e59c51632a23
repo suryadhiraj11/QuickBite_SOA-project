@@ -1,0 +1,5 @@
+package com.quickbite.restaurant.repository;
+
+public class MenuCategoryRepository {
+
+}

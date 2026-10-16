@@ -1,0 +1,21 @@
+package com.quickbite.payment.client;
+
+import com.quickbite.payment.config.FeignConfig;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+@FeignClient(
+        name = "ORDER-SERVICE",
+        configuration = FeignConfig.class
+)
+public interface OrderClient {
+
+    @GetMapping("/api/orders/{id}")
+    OrderResponse getOrder(@PathVariable Long id);
+
+    @PatchMapping("/api/orders/{id}/payment-status")
+    OrderResponse updatePaymentStatus(
+            @PathVariable Long id,
+            @RequestParam String status
+    );
+}

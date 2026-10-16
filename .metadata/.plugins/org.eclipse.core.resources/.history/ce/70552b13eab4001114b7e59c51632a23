@@ -1,0 +1,19 @@
+spring.application.name=API-GATEWAY
+
+server.port=8080
+
+# Eureka
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+
+eureka.instance.prefer-ip-address=true
+
+# Gateway discovery
+spring.cloud.gateway.discovery.locator.enabled=true
+spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+
+# Actuator
+management.endpoints.web.exposure.include=health,info,gateway
+
+jwt.secret=QuickBiteSuperSecretKeyForJWTAuthentication2026
